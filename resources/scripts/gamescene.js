@@ -107,13 +107,15 @@ function Console_KeyEvent(e, input)
 
 function Game_MovePlayer(value)
 {
-	if(value == 'ir')
+	let result = value.toLowerCase();
+
+	if(result == 'ir')
 		step = 1;
-	else if(value == 'atras')
+	else if(result == 'atras')
 		step = -1;
-	else if(value == 'izquierda')
+	else if(result == 'izquierda')
 		step = 2;
-	else if(value == 'derecha')
+	else if(result == 'derecha')
 		step = -2;
 }
 
