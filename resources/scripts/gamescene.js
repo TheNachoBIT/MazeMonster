@@ -182,6 +182,8 @@ function Player_TriggerUpdate()
 				openDoorSprite.minFilter = THREE.NearestFilter;
 				openDoorSprite.magFilter = THREE.NearestFilter;
 				getGlobalExit.name = "Door_Open";
+				SpawnDialogue("> Agarraste la llave!", "color: rgb(0, 255, 0)");
+
 			}
 			else if(intersectedObjs[i].object.name == "enable_monster_trigger_Cube" && enable_monster == 0)
 			{
@@ -251,7 +253,7 @@ function Game_PlayerUpdate(step)
 	{
 		if(backIntersects[i].object)
 		{
-			if(backIntersects[i].object.name != "Monster" && backIntersects[i].object.name != "Key" && backIntersects[i].object.name != "enable_monster_trigger_Cube"&& backIntersects[i].object.name != "Door_Closed")
+			if(backIntersects[i].object.name != "Monster" && backIntersects[i].object.name != "Key" && backIntersects[i].object.name != "enable_monster_trigger_Cube" && backIntersects[i].object.name != "Door_Closed")
 				hitsBack = 1;
 			if(backIntersects[i].object.name == "Door_Open")
 				winGame = 1;
