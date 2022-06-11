@@ -12,6 +12,7 @@ renderer.setPixelRatio( 0.3 );
 //world = new CANNON.World();
 
 var level;
+var getGlobalExit;
 loadOBJ('lvl', 'resources/models/', scene, 
 
 	function(object, texture)
@@ -19,6 +20,11 @@ loadOBJ('lvl', 'resources/models/', scene,
 		texture.minFilter = THREE.NearestFilter;
 		texture.magFilter = THREE.NearestFilter;
 		object.position.y = -1;
+		if(object.name == "enable_monster_trigger_Cube")
+		{
+			console.log("Monster Trigger Found!");
+			object.material.opacity = 0;
+		}
 	}
 
 	);
@@ -28,6 +34,22 @@ SpawnMonster(3, 0, 2000, function(object, texture){
 	texture.minFilter = THREE.NearestFilter;
 	texture.magFilter = THREE.NearestFilter;
 	monster = object; });
+
+// Key: -10, 0, 6
+SummonKey(-10, 0, 6, function(keyObject, keyTexture)
+{
+	keyTexture.minFilter = THREE.NearestFilter;
+	keyTexture.magFilter = THREE.NearestFilter;
+});
+
+
+// Door: 34, 0, 12
+SummonDoor(34, 0, 12, function(doorObject, doorTexture)
+{
+	doorTexture.minFilter = THREE.NearestFilter;
+	doorTexture.magFilter = THREE.NearestFilter;
+	getGlobalExit = doorObject;
+});
 
 //camera.position.z = 6;
 
@@ -49,21 +71,29 @@ function onWindowResize()
 	renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-function update(time) {
+scene.background = new THREE.Color( 0xffffff );
+scene.fog = new THREE.Fog( 0xffffff, 0.015, 7 ); 
+
+var screenShake = ScreenShake();
+var gameLost = false, winGame = 0;
+function update(time) 
+{
 	requestAnimationFrame( update );
 	TWEEN.update();
-
-	scene.background = new THREE.Color( 0xffffff );
-	scene.fog = new THREE.Fog( 0xffffff, 0.015, 7 ); 
 
 	//cube.rotation.x += 0.01;
 	//cube.rotation.y += 0.01;
 
-	Game_PlayerUpdate(step);
-	step = 0;
+	if(!gameLost && winGame == 0)
+	{
+		screenShake.update(camera);
+		Game_PlayerUpdate(step);
+		step = 0;
+	}
 
 	renderer.render( scene, camera );
 }
+
 requestAnimationFrame(update);
 
 function Console_KeyEvent(e, input)
@@ -81,9 +111,9 @@ function Game_MovePlayer(value)
 		step = 1;
 	else if(value == 'atras')
 		step = -1;
-	else if(value == 'girar izquierda')
+	else if(value == 'izquierda')
 		step = 2;
-	else if(value == 'girar derecha')
+	else if(value == 'derecha')
 		step = -2;
 }
 
@@ -98,53 +128,80 @@ function onPointerMove( event ) {
 
 var frontRaycaster = new THREE.Raycaster();
 var backRaycaster = new THREE.Raycaster();
+var canISeeTheMonsterRaycaster = new THREE.Raycaster();
 
 var anticipatedCamera = new THREE.Object3D();
 anticipatedCamera.position = camera.position;
 anticipatedCamera.rotation = camera.rotation;
 console.log("Anticipated Camera: " + anticipatedCamera);
 
-var playerTrigger = { forward: new THREE.Raycaster(), backward: new THREE.Raycaster(), left: new THREE.Raycaster(), right: new THREE.Raycaster() }
+playerTrigger = new THREE.Raycaster();
 
 var stop_test = 0;
-function Player_TriggerUpdate()
+var enable_monster = 0;
+
+function Game_Over()
 {
-	var playerPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
-	playerTrigger.forward.set(playerPos, new THREE.Vector3(0, 0, 1));
+	console.log("Jumpscare! >:D");
+	document.querySelector("#game-over").style.display = "block";
+	gameLost = true;
+}
+
+var display_no_exit_dialogue = 0;
+function Player_TriggerUpdate()
+{	
+	var getCamDirForTrigger = new THREE.Vector3();
+	camera.getWorldDirection(getCamDirForTrigger);
+
+	playerTrigger = new THREE.Raycaster();
+	var getPlayerPositionForTrigger = new THREE.Vector3(camera.position.x - (getCamDirForTrigger.x / 2), 
+		camera.position.y - (getCamDirForTrigger.y / 2), 
+		camera.position.z - (getCamDirForTrigger.z / 2));
+	playerTrigger.far = 0.5;
+	playerTrigger.set(getPlayerPositionForTrigger, getCamDirForTrigger);
 	//playerTrigger.backward.set(playerPos, new THREE.Vector3(0, 0, -1));
 	//playerTrigger.left.set(playerPos, new THREE.Vector3(1, 0, 0));
 	//playerTrigger.right.set(playerPos, new THREE.Vector3(-1, 0, 0));
 
-	playerTrigger.forward.far /*= playerTrigger.backward.far = playerTrigger.left.far = playerTrigger.right.far*/ = 0.5;
-
-	const forwardIntersects = playerTrigger.forward.intersectObjects(scene.children);
-	//const backwardIntersects = playerTrigger.backward.intersectObjects(scene.children);
-	//const leftIntersects = playerTrigger.left.intersectObjects(scene.children);
-	//const rightIntersects = playerTrigger.right.intersectObjects(scene.children);
+	const forwardIntersects = playerTrigger.intersectObjects(scene.children);
 
 	var intersectedObjs = [];
 
 	for ( let i = 0; i < forwardIntersects.length; i ++ ) 
 		intersectedObjs.push(forwardIntersects[i]);
 
-	//for ( let i = 0; i < backwardIntersects.length; i ++ ) 
-	//	intersectedObjs.push(backwardIntersects[i]);
-//
-	//for ( let i = 0; i < leftIntersects.length; i ++ ) 
-	//	intersectedObjs.push(leftIntersects[i]);
-//
-	//for ( let i = 0; i < rightIntersects.length; i ++ ) 
-	//	intersectedObjs.push(rightIntersects[i]);
-
 	for ( let i = 0; i < intersectedObjs.length; i ++ )
 	{
-		if(intersectedObjs[i].object.name == "Monster")
+		if(intersectedObjs[i].object.visible)
 		{
-			console.log("Jumpscare! >:D");
+			if(intersectedObjs[i].object.name == "Key")
+			{
+				console.log("Key Grabbed!");
+				intersectedObjs[i].object.visible = false;
+				getGlobalExit.material.map = openDoorSprite;
+				openDoorSprite.minFilter = THREE.NearestFilter;
+				openDoorSprite.magFilter = THREE.NearestFilter;
+				getGlobalExit.name = "Door_Open";
+			}
+			else if(intersectedObjs[i].object.name == "enable_monster_trigger_Cube" && enable_monster == 0)
+			{
+				enable_monster = 1;
+				SpawnDialogue("Rex se ha despertado.", "color: rgb(255, 100, 100)");
+			}
+			else if(intersectedObjs[i].object.name == "Door_Closed")
+			{
+				if(display_no_exit_dialogue == 0)
+				{
+					SpawnDialogue("> Necesitas una llave para abrir esta puerta.", "color: rgb(255, 100, 100)");
+					display_no_exit_dialogue = 1;
+				}
+			}
 		}
 	}
 }
-var enable_monster = 0;
+
+var enable_player_trigger = 0;
+var i_can_see_the_monster = 0;
 function Game_PlayerUpdate(step)
 {
 
@@ -171,27 +228,66 @@ function Game_PlayerUpdate(step)
 	backRaycaster.set(startVec, backCamDir);
 	backRaycaster.far = 1.2;
 
+	canISeeTheMonsterRaycaster.set(startVec, camDir);
+
 	const frontIntersects = frontRaycaster.intersectObjects(scene.children);
 	const backIntersects = backRaycaster.intersectObjects(scene.children);
+	const myEyeIntersects = canISeeTheMonsterRaycaster.intersectObjects(scene.children);
 
 	var hitsBack = 0, hitsFront = 0;
 	for ( let i = 0; i < frontIntersects.length; i ++ ) 
 	{
-		if(frontIntersects[i].name != "Monster")
-			hitsFront = 1;
+		if(frontIntersects[i].object)
+		{
+			if(frontIntersects[i].object.name != "Monster" && frontIntersects[i].object.name != "Key" && frontIntersects[i].object.name != "enable_monster_trigger_Cube" && frontIntersects[i].object.name != "Door_Closed")
+				hitsFront = 1;
+			if(frontIntersects[i].object.name == "Door_Open")
+				winGame = 1;
+		}
+
+		//console.log(frontIntersects[i]);
 	}
 	for ( let i = 0; i < backIntersects.length; i ++ ) 
 	{
-		if(backIntersects[i].name != "Monster")
-			hitsBack = 1;
+		if(backIntersects[i].object)
+		{
+			if(backIntersects[i].object.name != "Monster" && backIntersects[i].object.name != "Key" && backIntersects[i].object.name != "enable_monster_trigger_Cube"&& backIntersects[i].object.name != "Door_Closed")
+				hitsBack = 1;
+			if(backIntersects[i].object.name == "Door_Open")
+				winGame = 1;
+		}
 	}
 
-	Player_TriggerUpdate();
+	for ( let i = 0; i < myEyeIntersects.length; i ++ ) 
+	{
+		i_can_see_the_monster = 0;
+		if(myEyeIntersects[i].object)
+		{
+			if(myEyeIntersects[i].object.name == "Monster")
+			{
+				i_can_see_the_monster = 1;
+			}
+		}
+	}
+
+	if(winGame == 1)
+	{
+		console.log("You win! :D");
+		document.querySelector("#win").style.display = "block";
+	}
+
+	if(enable_player_trigger > 20)
+		Player_TriggerUpdate();
+	else
+		enable_player_trigger++;
+
+	MoveMonsterUpdate(monster, camera, 0.03);
 
 	if(step == 1)
 	{
 		if(hitsFront == 0)
 		{
+			SpawnDialogue("> Haces un paso hacia adelante...", "color: rgb(255, 255, 0)");
 			anticipatedCamera.rotation.x = camera.rotation.x;
 			anticipatedCamera.rotation.y = camera.rotation.y;
 			anticipatedCamera.rotation.z = camera.rotation.z;
@@ -200,7 +296,7 @@ function Game_PlayerUpdate(step)
 			anticipatedCamera.position.y = start.y + direction.y;
 			anticipatedCamera.position.z = start.z + direction.z;
 
-			if(enable_monster == 1)
+			if(enable_monster == 1 && i_can_see_the_monster == 0)
 				SetMonsterPos(monster, anticipatedCamera, camera);
 
 			var playerTween = new TWEEN.Tween(playerPosition)
@@ -218,6 +314,7 @@ function Game_PlayerUpdate(step)
 	{
 		if(hitsBack == 0)
 		{
+			SpawnDialogue("> Haces un paso hacia atras...", "color: rgb(255, 255, 0)");
 			anticipatedCamera.rotation.x = camera.rotation.x;
 			anticipatedCamera.rotation.y = camera.rotation.y;
 			anticipatedCamera.rotation.z = camera.rotation.z;
@@ -226,7 +323,7 @@ function Game_PlayerUpdate(step)
 			anticipatedCamera.position.y = start.y - direction.y;
 			anticipatedCamera.position.z = start.z - direction.z;
 
-			if(enable_monster == 1)
+			if(enable_monster == 1 && i_can_see_the_monster == 0)
 				SetMonsterPos(monster, anticipatedCamera, camera);
 
 			var playerTween = new TWEEN.Tween(playerPosition)
@@ -242,12 +339,18 @@ function Game_PlayerUpdate(step)
 	}
 	else if(step == 2)
 	{
+		SpawnDialogue("> Giras a la izquierda...", "color: rgb(255, 255, 0)");
+
 		var playerRotation = { x: 0, y: 0 };
-		playerRotation.y = camera.rotation.y;
+		playerRotation.y = camera.rotation.y;		
 
 		anticipatedCamera.rotation.y = camera.rotation.y + (0.5 * Math.PI);
 
-		if(enable_monster == 1)
+		anticipatedCamera.position.x = start.x;
+		anticipatedCamera.position.y = start.y;
+		anticipatedCamera.position.z = start.z;
+
+		if(enable_monster == 1 && i_can_see_the_monster == 0)
 			SetMonsterPos(monster, anticipatedCamera, camera);
 
 		var playerTween = new TWEEN.Tween(playerRotation)
@@ -260,12 +363,18 @@ function Game_PlayerUpdate(step)
 	}
 	else if(step == -2)
 	{
+		SpawnDialogue("> Giras a la derecha...", "color: rgb(255, 255, 0)");
+
 		var playerRotation = { x: 0, y: 0 };
 		playerRotation.y = camera.rotation.y;
 
 		anticipatedCamera.rotation.y = camera.rotation.y - (0.5 * Math.PI);
 
-		if(enable_monster == 1)
+		anticipatedCamera.position.x = start.x;
+		anticipatedCamera.position.y = start.y;
+		anticipatedCamera.position.z = start.z;
+
+		if(enable_monster == 1 && i_can_see_the_monster == 0)
 			SetMonsterPos(monster, anticipatedCamera, camera);
 
 		var playerTween = new TWEEN.Tween(playerRotation)

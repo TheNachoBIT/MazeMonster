@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title></title>
+	<title>El Monstruo del Laberinto</title>
 	<link rel="stylesheet" type="text/css" href="resources/style.css">
 	<script type="text/javascript" src="resources/libraries/three.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js" integrity="sha512-lIKG1kC5TMb1Zx32vdz1n31YJMZRknVY20U9MJ28hD3y2c0OKN0Ce5NhJji78v8zX5UOSsm+MTBOcJt7yMBnSg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -10,18 +10,26 @@
 <body>
 	<div id="game-screen-div">
 		<div class="control">
-			<div class="text-div">
-				Hola Giuliano xd
+			<div class="text-div" id="text-div">
 			</div>
 			<div class="input-div">
 				<input class="input" placeholder="Escribe que acción vas a hacer..." onKeyPress="Console_KeyEvent(event, this)"/>
 		</div>
 	</div>
 	</div>
+	<div class="game-over" id="game-over">
+		<p>Rex te ha capturado...</p>
+	</div>
+	<div class="win" id="win">
+		<p>Has escapado de ese laberinto y de las garras de Rex. Estás a salvo... Por ahora...</p>
+	</div>
 	<script type="text/javascript" src="resources/libraries/OBJLoader.js"></script>
 	<script type="text/javascript" src="resources/libraries/MTLLoader.js"></script>
+	<script type="text/javascript" src="resources/libraries/ScreenShake.js"></script>
 	<script type="text/javascript" src="resources/scripts/loadobj.js"></script>
 	<script type="text/javascript" src="resources/scripts/monsterai.js"></script>
+	<script type="text/javascript" src="resources/scripts/key.js"></script>
+	<script type="text/javascript" src="resources/scripts/dialogue.js"></script>
 	<script type="text/javascript" src="resources/scripts/gamescene.js"></script>
 </body>
 </html>

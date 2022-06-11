@@ -10,7 +10,7 @@ body
 	position: absolute;
 	width: 100%;
 	height: 9rem;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.8);
 	color: white;
 }
 
@@ -18,6 +18,10 @@ body
 {
 	width: 100%;
 	height: 80%;
+	overflow: hidden;
+	display: flex;
+	justify-content: flex-end;
+	flex-direction: column;
 }
 
 .input-div
@@ -50,8 +54,59 @@ body
 
 canvas
 {
-	image-rendering: -moz-crisp-edges;
+		image-rendering: -moz-crisp-edges;
   	image-rendering: -webkit-crisp-edges;
   	image-rendering: pixelated;
   	image-rendering: crisp-edges;
+}
+
+.text-div .dialogue-text:last-child
+{
+		animation: show 600ms 100ms cubic-bezier(0.38, 0.97, 0.56, 0.76) forwards;
+  	opacity: 0;
+  	margin: 1px;
+}
+
+@keyframes show {
+  100% {
+    opacity: 1;
+  }
+}
+
+.win
+{
+	width: 100vw;
+	height: 100vh;
+	background-color: white;
+	position: absolute;
+	display: none;
+	color: black;
+	top: 0;
+  left: 0;
+}
+
+.game-over
+{
+	width: 100vw;
+	height: 100vh;
+	background-color: black;
+	position: absolute;
+	display: none;
+	color: red;
+	top: 0;
+  left: 0;
+}
+
+.game-over p
+{
+	font-size: 40px;
+	animation: show 600ms 100ms cubic-bezier(0.38, 0.97, 0.56, 0.76) forwards;
+	opacity: 0;
+}
+
+.win p
+{
+	font-size: 40px;
+	animation: show 600ms 100ms cubic-bezier(0.38, 0.97, 0.56, 0.76) forwards;
+	opacity: 0;
 }

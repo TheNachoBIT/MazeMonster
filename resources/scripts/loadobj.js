@@ -25,9 +25,13 @@ function loadOBJ(name, dir, scene, func)
 				{
 					console.log(object.children[i]);
 					var newMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true });
-					newMaterial.map = object.children[i].material.map;
-					object.children[i].material = newMaterial;
 
+					if(object.children[i].material.map)
+					{
+						newMaterial.map = object.children[i].material.map;
+					}
+
+					object.children[i].material = newMaterial;
 					func(object.children[i], newMaterial.map);
 				}
 			},
