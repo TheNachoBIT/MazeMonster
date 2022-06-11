@@ -147,6 +147,8 @@ function Game_Over()
 	gameLost = true;
 }
 
+SpawnDialogue("Estas atrapado en un laberinto, sin saber como llegaste acá. Para moverte hacia adelante escribe 'ir'. Para moverte hacia atrás escribe 'atras'. Para girar a la izquierda escribe 'izquierda'. Para girar a la derecha escribe 'derecha'.", "color: rgb(255, 255, 255)");
+
 var display_no_exit_dialogue = 0;
 function Player_TriggerUpdate()
 {	
